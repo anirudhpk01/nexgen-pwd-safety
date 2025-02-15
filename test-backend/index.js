@@ -20,7 +20,10 @@ const pool = new Pool({
 
 // Middleware to parse JSON request bodies
 app.use(express.json());
+app.get('/', (req, res) => {
 
+    res.send('Hello World!');
+});
 // POST endpoint to insert company parameters
 app.post('/register-company', async (req, res) => {
     const {
