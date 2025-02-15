@@ -41,6 +41,8 @@ for pwd in passwords:
 model.save_pretrained("password_strength_model")
 tokenizer.save_pretrained("password_strength_model")
 
+strength = predict_password_strength("HFjfh34$3J4H%56")
+print(f"Password: {pwd}, Strength: {strength}")
 # Load the model and tokenizer
 model = AutoModelForSequenceClassification.from_pretrained("password_strength_model")
 tokenizer = AutoTokenizer.from_pretrained("password_strength_model")
