@@ -1,0 +1,14 @@
+Password Policy for Nexgen Portal Login:
+
+Passwords must have a minimum length of 15 characters
+
+Passwords must contain atleast 3 special characters
+
+Passwords must contain atleast 5 capital letters
+
+Passwords must contain atleast 7 small letters
+
+Passwords must contain 2 numbers minimum
+
+Passwords must have the prefix "NexGen" 
+

@@ -1,0 +1,11 @@
+google-generativeai
+fitz
+pymupdf
+chromadb
+langchain
+sentence-transformers
+langchain_openai
+langchain_chroma
+langchain_community
+langchain_huggingface
+sentence-transformers
