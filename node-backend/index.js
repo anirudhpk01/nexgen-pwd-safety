@@ -19,13 +19,11 @@ app.post("/newpass", async (req, res) => {
 	const password = req.body.password
 
 	const sha256 = createHash("sha256").update(password).digest("hex")
-	const sha1 = createHash("sha1").update(password).digest("hex")
 
 	const payload = {
 		username: username,
 		password: password,
 		sha256: sha256,
-		sha1: sha1
 	}
 
 	const record = await pb.collection('Nexgen').create(payload)
@@ -59,7 +57,6 @@ app.post("/updatepass", async (req, res) => {
 	const id = response.id
 
 	response.sha256 = createHash("sha256").update(newpass).digest("hex")
-	response.sha1 = createHash("sha1").update(newpass).digest("hex")
 
 	await pb.collection("Nexgen").update(id, response)
 
