@@ -1,5 +1,8 @@
 import hashlib
+from flask import Flask, request
 from fuzzywuzzy import fuzz
+
+app = Flask(__name__)
 
 with open("commonpasswords.txt") as file:
     common_passwords = {line.strip() for line in file}
@@ -12,7 +15,9 @@ def fuzzy_check(user_password, common_passwords, threshold=80):
             return True
     return False
 
-def check_common_passwords(password):
+@app.route("/checkcommon", methods=["GET"])
+def check_common_passwords():
+    password = request.args.get("password")
     hased_user_password = hashlib.sha256(password.encode()).hexdigest()
 
     if hased_user_password in hashed_common_passwords:
@@ -22,6 +27,5 @@ def check_common_passwords(password):
     
     return "Good to go!"
 
-
-user_password = input("Enter password: ")
-print(check_common_passwords(user_password))
+if __name__ == "__main__":
+    app.run(debug=True)
