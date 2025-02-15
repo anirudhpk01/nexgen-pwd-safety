@@ -9,7 +9,7 @@ export default function Dashboard() {
   return (
     <div className="flex min-h-screen bg-base-200">
       {/* Sidebar */}
-      <aside className={`bg-base-100 w-64 p-5 space-y-6 ${isSidebarOpen ? "block" : "hidden"} md:block shadow-lg`}>
+      <aside className={`bg-base-100 w-80 p-5 space-y-6 ${isSidebarOpen ? "block" : "hidden"} md:block shadow-lg`}>
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">Security Dashboard</h1>
           <button className="btn btn-sm md:hidden" onClick={() => setIsSidebarOpen(false)}>X</button>

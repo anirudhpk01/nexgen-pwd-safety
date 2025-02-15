@@ -1,46 +1,41 @@
+import axios from "axios"
 import { useState } from "react"
 
 export default function AddPassword() {
-    const [password, setPassword] = useState("")
-    const [confirmPassword, setConfirmPassword] = useState("")
-    const [message, setMessage] = useState("")
+	const [username, setUsername] = useState("")
+	const [password, setPassword] = useState("")
+	const [newPassword, setNewPassword] = useState("")
+	const [confirmPassword, setConfirmPassword] = useState("")
+	const [message, setMessage] = useState("")
 
-    const handleScan = () => {
-        if (!password || !confirmPassword) {
-            setMessage("Please fill out both fields")
-            return
-        }
-        if (password !== confirmPassword) {
-            setMessage("Passwords do not match")
-            return
-        }
+	const handleSubmit = async () => {
+		if (newPassword !== confirmPassword) {
+			setMessage("New passwords don't match")
+			return
+		}
 
-        // simulate the password scan
-        setMessage("Scan started!")
-    }
+		const payload = {
+			username: username,
+			password: password,
+			newpass: newPassword
+		}
 
-    return (
-        <div className="bg-base-100 p-6 rounded-lg shadow-lg w-full max-w-md mx-auto">
-          <h3 className="text-lg font-semibold mb-4">Add New Password</h3>
-          <label className="block mb-2">Enter Password</label>
-          <input 
-            type="password" 
-            className="input input-bordered w-full mb-4" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-          />
-          
-          <label className="block mb-2">Re-enter Password</label>
-          <input 
-            type="password" 
-            className="input input-bordered w-full mb-4" 
-            value={confirmPassword} 
-            onChange={(e) => setConfirmPassword(e.target.value)} 
-          />
-          
-          {message && <p className="text-red-500 mb-4">{message}</p>}
-          
-          <button className="btn btn-primary w-full" onClick={handleScan}>Scan</button>
-        </div>
-      )
+		try{
+			const res = await axios.post("http://127.0.0.1:7050/updatepass", payload)
+		} catch (err) {
+			setMessage(err.response.data)
+		}
+
+	}
+
+	return (
+		<div className="h-svh w-full flex flex-col items-center justify-center gap-4">
+			<input className="input input-bordered" placeholder="Username" autoFocus onChange={(e) => {setUsername(e.target.value)}}/>
+			<input className="input input-bordered" placeholder="Current Password" type="password" onChange={(e) => {setPassword(e.target.value)}}/>
+			<input className="input input-bordered" placeholder="New Password" type="password" onChange={(e) => {setNewPassword(e.target.value)}}/>
+			<input className="input input-bordered" placeholder="Re-Enter New Password" type="password" onChange={(e) => {setConfirmPassword(e.target.value)}}/>
+			{message && <div className="text-red-500">{message}</div>}
+			<button className="btn btn-primary" onClick={handleSubmit}>Confirm</button>
+		</div>
+	)
 }
