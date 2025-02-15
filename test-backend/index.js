@@ -5,6 +5,8 @@ const crypto = require('crypto');
 const fs = require('fs');
 const Fuse = require('fuse.js');
 const app = express();
+const cors = require("cors");
+app.use(cors());
 const PORT = 3000;
 
 app.use(express.json());
@@ -42,7 +44,8 @@ const fuse = new Fuse(commonPasswords, { threshold: 0.2 }); // 0.2 corresponds t
 
 // Check password API
 app.get('/checkcommon', (req, res) => {
-  const {password} = req.body;
+  const {password} = req.query;
+  console.log(password);
   if (!password) {
     return res.status(400).json({message: 'Password is required'});
   }
@@ -124,7 +127,7 @@ app.post('/register-company', async (req, res) => {
 
 // GET endpoint to validate plaintext against company parameters
 app.get('/validate-text', async (req, res) => {
-    const { company_name, plaintext } = req.body;
+    const { company_name, plaintext } = req.query;
 
     if (typeof company_name !== 'string' || typeof plaintext !== 'string') {
         return res.status(400).json({ error: 'Invalid input' });

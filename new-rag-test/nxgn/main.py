@@ -1,6 +1,5 @@
 import os
 
-# os.system('pip install google-generativeai fitz pymupdf chromadb langchain sentence-transformers langchain_openai langchain_chroma langchain_community langchain_huggingface sentence-transformers')
 
 import google.generativeai as genai
 from langchain_huggingface import HuggingFaceEmbeddings
