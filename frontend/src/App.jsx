@@ -1,12 +1,20 @@
-import { BrowserRouter } from "react-router"
+import { createBrowserRouter, RouterProvider } from "react-router"
+import Dashboard from "./pages/Dashboard" 
+import AddPassword from "./pages/AddPassword";
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Dashboard />,
+  }, 
+  {
+    path: '/addpassword',
+    element: <AddPassword />,
+  }
+]);
 
 function App() {
-  // return <h1 className="text-red-900" >Hello World</h1>
-  return (
-  <BrowserRouter>
-    <h1>Hello World</h1>
-  </BrowserRouter>
-  )
+  return <RouterProvider router={router} />;
 }
 
 export default App
