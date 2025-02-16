@@ -5,10 +5,26 @@ const express = require("express")
 const fs = require("fs")
 const Fuse = require('fuse.js');
 const PocketBase = require('pocketbase/cjs')
+const { Pool } = require('pg');
 
 const pb = new PocketBase("http://localhost:8090")
 
 const PORT = 7050
+
+PGHOST='ep-mute-boat-a53qmt0d-pooler.us-east-2.aws.neon.tech'
+PGDATABASE='trial'
+PGUSER='trial_owner'
+PGPASSWORD='pfUPK60AktIV'
+
+// PostgreSQL connection setup
+const pool = new Pool({
+    user: PGUSER,
+    host: PGHOST,
+    database: PGDATABASE,
+    password: PGPASSWORD,
+    port: 5432,
+    ssl: {require: true}
+});
 
 const app = express()
 
@@ -106,7 +122,27 @@ app.post("/updatepass", async (req, res) => {
 
 	await pb.collection("Nexgen").update(id, response)
 
+
 	res.send("Done")
+})
+
+app.get("/updatescore", async (req, res) => {
+	const {newpass} = req.query
+	const currentscorearr = await pb.collection("strength").getFullList()
+	let score = currentscorearr[0].score
+
+	const strength = await axios.get(`http://localhost:5000/strength?password=${newpass}`)
+
+	if (strength.data === "Strong") {
+		score = score + 10
+	}else if (strength.data === "Medium") {
+		score = score + 2
+	}else if (strength.data === "Weak"){
+		score = score - 2
+	}
+
+
+	await pb.collection("strength").update(currentscorearr[0].id, {"score": score})
 })
 
 app.get('/checkcommon', (req, res) => {
@@ -182,6 +218,85 @@ app.post('/register-company', async (req, res) => {
         res.status(400).json({ error: 'Invalid request body.' });
     }
 });
+
+// app.get('/validatetext', async (req, res) => {
+//     const { plaintext } = req.query;
+// 	const company_name = "Infosys"
+
+//     if (typeof company_name !== 'string' || typeof plaintext !== 'string') {
+//         return res.status(400).json({ error: 'Invalid input' });
+//     }
+
+//     try {
+//         const result = await pool.query('SELECT * FROM company_params WHERE company_name = $1', [company_name]);
+//         if (result.rows.length === 0) {
+//             return res.status(404).json({ error: 'Company not found' });
+//         }
+
+//         const params = result.rows[0];
+
+//         // Check length
+//         if (plaintext.length < params.minimum_length) {
+//             return res.status(400).json({ error: 'Plaintext length is insufficient' });
+//         }
+
+//         // Check capital letters
+//         const capitalCount = (plaintext.match(/[A-Z]/g) || []).length;
+//         if (capitalCount < params.no_of_capital_letters) {
+//             return res.status(400).json({ error: 'Insufficient capital letters' });
+//         }
+
+//         // Check special characters
+//         const specialCount = (plaintext.match(/[^a-zA-Z0-9]/g) || []).length;
+//         if (specialCount < params.no_of_special_characters) {
+//             return res.status(400).json({ error: 'Insufficient special characters' });
+//         }
+
+//         // Check numbers
+//         const numberCount = (plaintext.match(/[0-9]/g) || []).length;
+//         if (numberCount < params.no_of_numbers) {
+//             return res.status(400).json({ error: 'Insufficient numbers' });
+//         }
+
+//         // Check small letters
+//         const smallCount = (plaintext.match(/[a-z]/g) || []).length;
+//         if (smallCount < params.no_of_small_letters) {
+//             return res.status(400).json({ error: 'Insufficient small letters' });
+//         }
+
+//         // Check prefix
+//         if (params.prefix && !plaintext.startsWith(params.prefix)) {
+//             return res.status(400).json({ error: 'Plaintext does not start with the required prefix' });
+//         }
+
+//         // Check suffix
+//         if (params.suffix && !plaintext.endsWith(params.suffix)) {
+//             return res.status(400).json({ error: 'Plaintext does not end with the required suffix' });
+//         }
+
+//         // Check patterns to be present
+//         for (const pattern of params.patterns_to_be_present) {
+//             const regex = new RegExp(pattern);
+//             if (!regex.test(plaintext)) {
+//                 return res.status(400).json({ error: `Missing required pattern: ${pattern}` });
+//             }
+//         }
+
+//         // Check anti-patterns
+//         for (const pattern of params.anti_patterns) {
+//             const regex = new RegExp(pattern);
+//             if (regex.test(plaintext)) {
+//                 return res.status(400).json({ error: `Forbidden pattern found: ${pattern}` });
+//             }
+//         }
+
+//         console.log('Plaintext validation passed.');
+//         res.status(200).json({ message: 'Plaintext validation passed' });
+//     } catch (error) {
+//         console.error('Database error:', error);
+//         res.status(500).json({ error: 'Internal server error' });
+//     }
+// })
 
 app.get('/validatetext', async (req, res) => {
 	console.log('validate')
@@ -265,6 +380,13 @@ app.get('/validatetext', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+app.get("/strengthscore", async (req, res) => {
+	const scorearray = await pb.collection("strength").getFullList()
+	const score = scorearray[0].score
+
+	res.send(score.toString())
+})
 
 app.listen(PORT, () => {
 	console.log(`Serving on http://localhost:${PORT}`)

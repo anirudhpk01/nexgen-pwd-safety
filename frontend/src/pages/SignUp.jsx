@@ -1,21 +1,17 @@
 import axios from "axios"
-import { sha1 } from 'crypto-hash';
-import { useState } from "react"
+import {useState} from "react"
 
-export default function AddPassword() {
+function SignUp(){
 	const [username, setUsername] = useState("")
 	const [password, setPassword] = useState("")
-	const [newPassword, setNewPassword] = useState("")
-	const [confirmPassword, setConfirmPassword] = useState("")
-	const [result, setResult] = useState("")
+	const [repass, setRePass] = useState("")
 
 	const checkPassword = async () => {
-		axios.get(`http://localhost:7050/updatescore?newpass=${newPassword}`)
 		setResult('');
 
 		try {
 			// Step 1: Check HIBP API
-			const hashedPassword = (await sha1(newPassword)).toUpperCase();
+			const hashedPassword = (await sha1(password)).toUpperCase();
 			const prefix = hashedPassword.slice(0, 5);
 			const suffix = hashedPassword.slice(5);
 			const hibpResponse = await axios.get(
@@ -37,7 +33,7 @@ export default function AddPassword() {
 
 			// Step 2: Check common passwords
 			const commonResponse = await axios.get(
-				`http://localhost:7050/checkcommon?password=${newPassword}`
+				`http://localhost:7050/checkcommon?password=${password}`
 			);
 
 			console.log(commonResponse)
@@ -47,12 +43,12 @@ export default function AddPassword() {
 			}
 
 			const validateResponse = await axios.get(
-				`http://localhost:7050/validatetext?company_name=infosys&plaintext=${newPassword}`
+				`http://localhost:7050/validatetext?company_name=infosys&plaintext=${password}`
 			);
 
 			// Handle validation response
-			if (validateResponse.data.message === 'Plaintext validation passed') {
-				if (newPassword !== confirmPassword) {
+			if (validateResponse.data.result === 'Plaintext validation passed') {
+				if (password !== confirmPassword) {
 					setResult("New passwords don't match")
 					return
 				}
@@ -70,7 +66,6 @@ export default function AddPassword() {
 					setResult(err.response.data)
 				}
 			} else {
-				console.log(validateResponse)
 				// Handle both error formats from backend
 				const errorResult = validateResponse.data.error || 
 					validateResponse.data.result || 
@@ -94,11 +89,6 @@ export default function AddPassword() {
 	};
 
 	const handleSubmit = async () => {
-		if (newPassword !== confirmPassword) {
-			setResult("New passwords don't match")
-			return
-		}
-
 		const payload = {
 			username: username,
 			password: password,
@@ -116,12 +106,12 @@ export default function AddPassword() {
 
 	return (
 		<div className="h-svh w-full flex flex-col items-center justify-center gap-4">
-			<input className="input input-bordered" placeholder="Username" autoFocus onChange={(e) => {setUsername(e.target.value)}}/>
-			<input className="input input-bordered" placeholder="Current Password" type="password" onChange={(e) => {setPassword(e.target.value)}}/>
-			<input className="input input-bordered" placeholder="New Password" type="password" onChange={(e) => {setNewPassword(e.target.value)}}/>
-			<input className="input input-bordered" placeholder="Re-Enter New Password" type="password" onChange={(e) => {setConfirmPassword(e.target.value)}}/>
-			{result && <div className="text-red-500">{result}</div>}
-			<button className="btn btn-primary" onClick={checkPassword}>Confirm</button>
+		<input className="input input-bordered" placeholder="Username" onChange={(e) => {setUsernam(e.target.val)}}/>
+		<input className="input input-bordered" placeholder="New Password" onChange={(e) => {setPassword(e.target.value)}}/>
+		<input className="input input-bordered" placeholder="Re-Enter New Password" onChange={(e) => {setRePass(e.target.value)}}/>
+		<button className="btn btn-primary">Confirm</button>
 		</div>
 	)
 }
+
+export default SignUp
