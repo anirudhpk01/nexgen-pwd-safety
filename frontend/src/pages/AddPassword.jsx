@@ -10,7 +10,6 @@ export default function AddPassword() {
 	const [result, setResult] = useState("")
 
 	const checkPassword = async () => {
-		axios.get(`http://localhost:7050/updatescore?newpass=${newPassword}`)
 		setResult('');
 
 		try {
@@ -91,6 +90,7 @@ export default function AddPassword() {
 				setResult('Failed to process request. Please try again.');
 			}
 		}
+		axios.get(`http://localhost:7050/updatescore?newpass=${newPassword}&username=${username}`)
 	};
 
 	const handleSubmit = async () => {

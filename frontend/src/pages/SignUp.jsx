@@ -1,10 +1,12 @@
 import axios from "axios"
+import { sha1 } from 'crypto-hash';
 import {useState} from "react"
 
 function SignUp(){
 	const [username, setUsername] = useState("")
 	const [password, setPassword] = useState("")
 	const [repass, setRePass] = useState("")
+	const [result, setResult] = useState("")
 
 	const checkPassword = async () => {
 		setResult('');
@@ -47,20 +49,14 @@ function SignUp(){
 			);
 
 			// Handle validation response
-			if (validateResponse.data.result === 'Plaintext validation passed') {
-				if (password !== confirmPassword) {
-					setResult("New passwords don't match")
-					return
-				}
-
+			if (validateResponse.data.message === 'Plaintext validation passed') {
 				const payload = {
 					username: username,
 					password: password,
-					newpass: newPassword
 				}
 
 				try{
-					const res = await axios.post("http://127.0.0.1:7050/updatepass", payload)
+					const res = await axios.post("http://127.0.0.1:7050/newpass", payload)
 					setResult("")
 				} catch (err) {
 					setResult(err.response.data)
@@ -88,28 +84,13 @@ function SignUp(){
 		}
 	};
 
-	const handleSubmit = async () => {
-		const payload = {
-			username: username,
-			password: password,
-			newpass: newPassword
-		}
-
-		try{
-			const res = await axios.post("http://127.0.0.1:7050/updatepass", payload)
-			setResult("")
-		} catch (err) {
-			setResult(err.response.data)
-		}
-
-	}
-
 	return (
 		<div className="h-svh w-full flex flex-col items-center justify-center gap-4">
-		<input className="input input-bordered" placeholder="Username" onChange={(e) => {setUsernam(e.target.val)}}/>
+		<input className="input input-bordered" placeholder="Username" onChange={(e) => {setUsername(e.target.value)}}/>
 		<input className="input input-bordered" placeholder="New Password" onChange={(e) => {setPassword(e.target.value)}}/>
 		<input className="input input-bordered" placeholder="Re-Enter New Password" onChange={(e) => {setRePass(e.target.value)}}/>
-		<button className="btn btn-primary">Confirm</button>
+		{result && <div className="text-red-500">{result}</div>}
+		<button className="btn btn-primary" onClick={checkPassword}>Confirm</button>
 		</div>
 	)
 }

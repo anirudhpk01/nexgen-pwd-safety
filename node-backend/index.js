@@ -6,6 +6,7 @@ const fs = require("fs")
 const Fuse = require('fuse.js');
 const PocketBase = require('pocketbase/cjs')
 const { Pool } = require('pg');
+const math = require("mathjs")
 
 const pb = new PocketBase("http://localhost:8090")
 
@@ -51,14 +52,26 @@ app.post("/newpass", async (req, res) => {
 	const password = req.body.password
 
 	const sha256 = createHash("sha256").update(password).digest("hex")
+	const sha1 = createHash("sha1").update(password).digest("hex")
 
+	console.log(username)
 	const payload = {
 		username: username,
-		password: password,
 		sha256: sha256,
+		sha1: sha1,
 	}
 
 	const record = await pb.collection('Nexgen').create(payload)
+	const response = await axios.get(`http://localhost:5000/strength?password=${password}`)
+	let score
+	if(response.data === "Strong") {
+		score = 10
+	} else if (response.data === "Medium") {
+		score = 7
+	} else {
+		score = 3
+	}
+	await pb.collection("strength").create({username: username, score: score})
 
 	res.send("Done")
 })
@@ -72,10 +85,9 @@ const checkReuse = async (password) => {
 	return passwords.length
 }
 
-const checkCompromised = async (password) => {
-    const passwordHash = createHash('sha1').update(password).digest('hex').toUpperCase();
-    const prefix = passwordHash.slice(0, 5);
-    const suffix = passwordHash.slice(5);
+const checkCompromised = async (sha1) => {
+    const prefix = sha1.slice(0, 5);
+    const suffix = sha1.slice(5);
 
     try {
         // Query the HIBP API
@@ -103,7 +115,7 @@ app.post("/updatepass", async (req, res) => {
 	const newpass = req.body.newpass
 
 	const sha256 = createHash("sha256").update(password).digest("hex")
-	const response = await pb.collection("Nexgen").getFirstListItem(`username="${username}"`)
+	let response = await pb.collection("Nexgen").getFirstListItem(`username="${username}"`)
 	if (sha256 != response.sha256){
 		res.status(401).send("Wrong Password")
 		return
@@ -119,28 +131,43 @@ app.post("/updatepass", async (req, res) => {
 	const id = response.id
 
 	response.sha256 = createHash("sha256").update(newpass).digest("hex")
+	response.sha1 = createHash("sha1").update(newpass).digest("hex")
 
 	await pb.collection("Nexgen").update(id, response)
 
+	response = await axios.get(`http://localhost:5000/strength?password=${newpass}`)
+	let score
+	if(response.data === "Strong") {
+		score = 10
+	} else if (response.data === "Medium") {
+		score = 7
+	} else {
+		score = 3
+	}
+
+	response = await pb.collection("strength").getFirstListItem(`username="${username}"`)
+	const new_id = response.data.id
+
+	await pb.collection("strength").update(id, {score: score})
 
 	res.send("Done")
 })
 
 app.get("/updatescore", async (req, res) => {
 	const {newpass} = req.query
+	const {username} = req.query
 	const currentscorearr = await pb.collection("strength").getFullList()
 	let score = currentscorearr[0].score
 
 	const strength = await axios.get(`http://localhost:5000/strength?password=${newpass}`)
 
 	if (strength.data === "Strong") {
-		score = score + 10
+		score = 10
 	}else if (strength.data === "Medium") {
-		score = score + 2
+		score = 7
 	}else if (strength.data === "Weak"){
-		score = score - 2
+		score = 3
 	}
-
 
 	await pb.collection("strength").update(currentscorearr[0].id, {"score": score})
 })
@@ -382,10 +409,35 @@ app.get('/validatetext', async (req, res) => {
 });
 
 app.get("/strengthscore", async (req, res) => {
-	const scorearray = await pb.collection("strength").getFullList()
-	const score = scorearray[0].score
+	const allusers = await pb.collection("strength").getFullList()
 
-	res.send(score.toString())
+	const max = allusers.length * 10
+
+	let total = 0
+
+	for (let i=0; i<allusers.length; i++) {
+		total += allusers[i].score
+	}
+
+	console.log(max, total)
+
+	const final = math.round((total / max) * 100)
+
+	res.send(final.toString())
+
+})
+
+app.get("/compromised", async (req, res) => {
+	const allusers = await pb.collection("Nexgen").getFullList()
+
+	let count = 0
+
+	for (let i=0; i<allusers.length; i++){
+		const response = await checkCompromised(allusers[i].sha1)
+		count += response.isCompromised ? 1 : 0
+	}
+
+	res.send(count.toString())
 })
 
 app.listen(PORT, () => {

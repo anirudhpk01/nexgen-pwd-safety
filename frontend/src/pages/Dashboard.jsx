@@ -27,9 +27,9 @@ export default function Dashboard() {
           <button className="btn btn-sm md:hidden" onClick={() => setIsSidebarOpen(false)}>X</button>
         </div>
         <nav className="mt-5 space-y-4">
-          <button className="btn btn-ghost w-full text-left">Check Compromised Passwords</button>
-          <button className="btn btn-ghost w-full text-left">Check Password Strength</button>
-          <button className="btn btn-ghost w-full text-left">Add New Company Policy</button>
+          <button className="btn w-full text-left">Check Compromised Passwords</button>
+          <button className="btn w-full text-left">Check Password Strength</button>
+          <button className="btn w-full text-left">Add New Company Policy</button>
         </nav>
       </aside>
 
@@ -44,10 +44,10 @@ export default function Dashboard() {
           }}>Add New Password</button>
         </div>
 	    <div className="grow w-full flex items-center justify-center">
-		 <div className="stats shadow h-7/12">
+		 <div className="stats shadow h-40 w-40">
 		   <div className="stat">
 		 	 <div className="stat-title">Security Score</div>
-		 	 <div className="stat-value">{score}</div>
+		 	 <div className="stat-value">{score}%</div>
 		   </div>
 		 </div>
 	    </div>
