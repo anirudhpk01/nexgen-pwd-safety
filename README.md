@@ -1,5 +1,7 @@
 # AI-Powered Password Security System
 
+
+
 ### Enforcing Custom Company Password Policies using RAG Pipelines
 
 ## Overview
@@ -11,6 +13,11 @@ Our project aims to quantify the strength and security of a company’s password
 - **Secure Hash Storage**: No plaintext passwords are stored; SHA-1 hashes are used with an option for encryption.
 - **Security Admin Dashboard**: Provides password strength insights and real-time breach monitoring.
 - **Scalability**: Lightweight frontend for password checks, enterprise-wide scaling with Kafka/MQTT.
+
+![image](https://github.com/user-attachments/assets/df96f1f0-d08d-4f9e-8699-3615e821a619)
+![image](https://github.com/user-attachments/assets/ba3a46ea-38a0-4d47-92b1-f6755c3428af)
+![image](https://github.com/user-attachments/assets/97f12ee4-c914-403c-b567-f0fbed6d5782)
+
 
 ## Tech Stack
 - **AI & Security**: LangChain, ChromaDB, Google Gemini API
